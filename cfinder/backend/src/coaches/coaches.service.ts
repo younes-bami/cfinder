@@ -1,21 +1,26 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Coach, CoachDocument } from './schemas/coach.schema';
 
-export type CoachDocument = Coach & Document;
+@Injectable()
+export class CoachesService {
+  constructor(@InjectModel(Coach.name) private coachModel: Model<CoachDocument>) {}
 
-@Schema()
-export class Coach {
-  @Prop({ required: true })
-  userId: string;
+  async createCoach(createCoachDto: any): Promise<Coach> {
+    const createdCoach = new this.coachModel(createCoachDto);
+    return createdCoach.save();
+  }
 
-  @Prop()
-  bio: string;
+  async findAll(): Promise<Coach[]> {
+    return this.coachModel.find().exec();
+  }
 
-  @Prop([String])
-  disciplines: string[];
+  async findOne(id: string): Promise<Coach> {
+    return this.coachModel.findById(id).exec();
+  }
 
-  @Prop({ default: 0 })
-  rating: number;
+  async updateRating(id: string, rating: number): Promise<Coach> {
+    return this.coachModel.findByIdAndUpdate(id, { rating }, { new: true }).exec();
+  }
 }
-
-export const CoachSchema = SchemaFactory.createForClass(Coach);
